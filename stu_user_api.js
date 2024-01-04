@@ -17,7 +17,7 @@ const userLogin = (req, res) => {
     	return
     }
     const sqlStrselect = "select * from stu_user WHERE username=?"
-    db.query(sqlStrselect, [username, password], (results,fields) => {
+    db.query(sqlStrselect, [username], (results,fields) => {
 		if (results.length > 0) {
 			const _password = sm3(`${password}${results[0].salt}`)
 			if(_password === results[0].password){

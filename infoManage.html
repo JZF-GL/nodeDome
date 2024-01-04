@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>  
+<html>  
+<head>  
+  <title>接口测试</title>  
+</head>  
+<body>  
+  <h1>测试</h1>  
+  <p id="result"></p>  
+  <form action="http://localhost:8879/api/user/login" method="post">
+      <input type="text" name="username" />
+      <input type="password" name="password" />
+      <input type="submit" value="登录" />
+  </form>
+  <form action="http://localhost:8879/api/user/register" method="post">
+    <input type="text" name="username" />
+    <input type="password" name="password" />
+    <input type="submit" value="注册" />
+</form>
+<form action="http://localhost:8879/api/files/uploads" method="post" enctype="multipart/form-data">
+  <input type="file" name="file" />
+  <input type="submit" value="上传" />
+</form>
+  <script>
+    // const url = 'http://localhost:8879/api/user/register'; // 替换为你的接口URL  
+    // const body = new URLSearchParams();  
+    // body.append('username', 'test02');  
+    // body.append('password', 'test02');  
+
+    // fetch(url, {  
+    // method: 'POST', // 或者 'POST'  
+    // headers: {  
+    //   'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'  
+    // },  
+    // body: body.toString()  
+    // }).then(response => response.json())
+    // .then(data => {  
+    // console.log('注册成功', data);  
+    // document.getElementById("result").textContent = data.msg;
+    // })  
+    // .catch(error => {  
+    // console.error('注册失败', error);  
+    // document.getElementById("result").textContent = data.msg;
+    // });
+  </script>  
+</body>  
+</html>

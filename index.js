@@ -6,7 +6,7 @@ const app = express()
 const port = 8879
 const userApi = require('./stu_user_api')
 const useFiles = require('./usefiles')
-const path = require('path')
+const awardApi = require('./awardApi')
 
 app.use((err, req, res, next) => {  
   // 自定义错误页面或响应  
@@ -39,6 +39,7 @@ app.get('/api/user/userList', (req, res) => {
 app.use('/api/user',userApi)
 
 app.use('/api/files',useFiles)
+app.use('/api/award',awardApi)
 app.use('/assets',express.static('assets'));  
 // app.use("/assets", express.static(__dirname));
 

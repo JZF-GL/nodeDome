@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>  
+<html>  
+<head>  
+  <title>获奖信息</title>  
+</head>  
+<body>  
+  <h1>获奖信息</h1>  
+  <p id="result"></p>  
+  <form action="http://localhost:8879/api/award/add" method="post">
+      <input type="text" name="school" placeholder="学校" value="学校" />
+      <input type="text" name="college" placeholder="学院" />
+      <input type="text" name="speciality" placeholder="专业" />
+      <input type="number" min="1900" max="2024" name="grade" placeholder="年级" value="2018" />
+      <input type="text" name="student_id" placeholder="学号" />
+      <input type="text" name="full_name" placeholder="姓名" />
+      <input type="date" name="award_time" placeholder="获奖时间" />
+      <input type="text" name="activity" placeholder="比赛、活动名称" />
+      <input type="text" name="encourage" placeholder="获奖名称" />
+      <input type="text" name="Instructor" placeholder="指导老师" />
+      <input type="text" name="org" placeholder="主办单位、机构、部门" />
+      <!-- <input type="text" name="approver" placeholder="" /> -->
+      <!-- <input type="text" name="submit_user" placeholder="" /> -->
+      <input type="submit" value="新增" />
+  </form>
+  <input type="button" value="查询" onclick="getAwardList()" />
+  <div class="awaryLists" id="awary">
+
+  </div>
+  <form action="http://localhost:8879/api/award/edit" method="post">
+    <input type="text" name="id" placeholder="id" />
+    <input type="text" name="school" placeholder="学校" value="学校" />
+    <input type="text" name="college" placeholder="学院" />
+    <input type="text" name="speciality" placeholder="专业" />
+    <input type="number" min="1900" max="2024" name="grade" placeholder="年级" value="2018" />
+    <input type="text" name="student_id" placeholder="学号" />
+    <input type="text" name="full_name" placeholder="姓名" />
+    <input type="date" name="award_time" placeholder="获奖时间" />
+    <input type="text" name="activity" placeholder="比赛、活动名称" />
+    <input type="text" name="encourage" placeholder="获奖名称" />
+    <input type="text" name="Instructor" placeholder="指导老师" />
+    <input type="text" name="org" placeholder="主办单位、机构、部门" />
+    <!-- <input type="text" name="approver" placeholder="" /> -->
+    <!-- <input type="text" name="submit_user" placeholder="" /> -->
+    <input type="submit" value="修改" />
+  </form>
+  <script>
+      const getAwardList = () =>{
+        const url = 'http://localhost:8879/api/award/lists';
+        fetch(url, {  
+            method: 'get', // 或者 'POST'  
+            headers: {  
+              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'  
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            // console.log(data.data)
+            let _b = document.getElementById("awary");
+            let _c = document.createElement('ul')
+            if(data.data.length){
+                for(var i in data.data){
+                    let _d = document.createElement('li')
+                    _d.innerHTML = `
+                        ${data.data[i].school}<br />
+                        ${data.data[i].college}<br />
+                        ${data.data[i].speciality}<br />
+                        ${data.data[i].grade}<br />
+                        ${data.data[i].student_id}<br />
+                        ${data.data[i].full_name}<br />
+                        ${data.data[i].award_time}<br />
+                        ${data.data[i].activity}<br />
+                        ${data.data[i].encourage}<br />
+                        ${data.data[i].Instructor}<br />
+                        ${data.data[i].org}<br />
+                        <input type="button" value="删除" onclick="delAward(${data.data[i].id})" />
+                    `
+                    _c.appendChild(_d)
+                }
+            }
+            _b.appendChild(_c)
+        })
+      }
+      const delAward = (_id) =>{
+        const url = `http://localhost:8879/api/award/del?id=${_id}`;
+        fetch(url, {  
+            method: 'delete',
+            headers: {  
+              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'  
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.data)
+        })
+      }
+  </script>  
+</body>  
+</html>
