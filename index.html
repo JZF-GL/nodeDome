@@ -2,22 +2,26 @@
 <!DOCTYPE html>  
 <html>  
 <head>  
-  <title>调用接口示例</title>  
+  <title>接口测试</title>  
 </head>  
 <body>  
-  <h1>接口返回的数据：</h1>  
+  <h1>测试</h1>  
   <p id="result"></p>  
   <form action="http://localhost:8879/api/user/login" method="post">
-      <input type="text" name="username" aria-label="username" />
-      <input type="password" name="password" aria-label="password" />
+      <input type="text" name="username" />
+      <input type="password" name="password" />
       <input type="submit" value="登录" />
   </form>
   <form action="http://localhost:8879/api/user/register" method="post">
-    <input type="text" name="username" aria-label="username" />
-    <input type="password" name="password" aria-label="password" />
+    <input type="text" name="username" />
+    <input type="password" name="password" />
     <input type="submit" value="注册" />
 </form>
-  <script>   
+<form action="http://localhost:8879/api/files/uploads" method="post" enctype="multipart/form-data">
+  <input type="file" name="file" />
+  <input type="submit" value="上传" />
+</form>
+  <script>
     // const url = 'http://localhost:8879/api/user/register'; // 替换为你的接口URL  
     // const body = new URLSearchParams();  
     // body.append('username', 'test02');  
