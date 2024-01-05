@@ -3,7 +3,7 @@ const express = require('express')
 var router = express.Router()
 const multer = require('multer'); // 导入Multer库，用于处理文件上传
 var Jimp = require("jimp");
-
+const XLSX = require('xlsx'); 
 const path = require('path');
 
 const useJimp = async (fp,host,w,h) => {
@@ -99,6 +99,30 @@ const useUploads = async (req, res) => {
     res.send({ code: 1, msg: "upload成功", data: _a });
 }
 
+const execlModul = (req, res) => {  
+  // 定义配置数据  
+  const config = {  
+    title: '导入模板',  
+    data: [
+      { "学校": "", "学院": "" ,"专业": "","年级": "","学号": "","姓名": "","获奖时间": "","比赛、活动名称": "","获奖名称": "","指导老师": "","主办单位、机构、部门": ""},
+    ]  
+  };  
+  // const workbook = XLSX.utils.book_new();  
+  // // {header:["学校", "学院","专业","年级","学号","姓名","获奖时间","比赛、活动名称","获奖名称","指导老师","主办单位、机构、部门"]}
+  // const worksheet = XLSX.utils.json_to_sheet(config.data); 
+  // // console.log(workbook)
+  // XLSX.utils.book_append_sheet(workbook, worksheet, config.title);  
+  // const filename = `${config.title}.xlsx`;  
+  // const encodedFilename = encodeURIComponent(filename);  
+  // res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');  
+  // res.setHeader('Content-Disposition', `attachment; filename="${encodedFilename}"`);
+  // XLSX.writeFile(workbook,`assets/xlsx/${config.title}.xlsx`)
+  res.redirect(`http://${req.headers.host}/assets/xlsx/${config.title}.xlsx`);
+  // res.send(workbook); 
+  // res.send(`http://${host}/assets/xlsx/${config.title}.xlsx`)
+}
+
+router.get('/dModul', execlModul)
 router.post('/uploads', upload.single('file'),useUploads)
 
 module.exports = router
