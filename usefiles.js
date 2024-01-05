@@ -15,13 +15,13 @@ const useJimp = async (fp,host,w,h) => {
     //读取图片
     let _image = await Jimp.read(imageFilePath)
     //读取时间戳
-    const timestamp = new Date().getTime();
+    // const timestamp = new Date().getTime();
     //图片处理
-    await _image.quality(80).write(`assets/images/${timestamp}${fp}`)
+    await _image.quality(80).write(`assets/images/jimp_${fp}`)
     // .resize(256, 256)
     //输出地址
     _FP.y = `http://${host}/assets/uploads/${fp}`;
-    _FP.n = `http://${host}/assets/images/${timestamp}${fp}`;
+    _FP.n = `http://${host}/assets/images/jimp_${fp}`;
     return _FP
 }
 
@@ -80,7 +80,11 @@ const storage = multer.diskStorage({
       cb(null, 'assets/uploads/') // 指定上传文件的存储目录
     },
     filename: (req, file, cb) => {
-      cb(null, file.originalname) // 指定上传文件的文件名生成策略，这里使用原始文件名
+      req.setEncoding('utf-8')
+      const _filename = Buffer.from(file.originalname,'latin1').toString('utf-8')
+      const timestamp = new Date().getTime();
+      const filename = `${timestamp}_${_filename}`;  
+      cb(null, filename) // 指定上传文件的文件名生成策略，这里使用原始文件名
     }
 });
   
@@ -88,15 +92,19 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const useUploads = async (req, res) => {
+  // console.log(req.file)
     if (!req.file) {
       return res.status(400).send('upload错误');
     }
-    let _a = await useJimp(req.file.filename,req.headers.host)
-    // encryptData(req.file)
-    // console.log('req.file---->',req.file)
-    // console.log('req.headers---->',req.headers)
-    // useJimp(req.file.filename,req.file.width,)
-    res.send({ code: 1, msg: "upload成功", data: _a });
+
+    //图片压缩走这里
+    // let _a = await useJimp(req.file.filename,req.headers.host)
+    // res.send({ code: 1, msg: "upload成功", data: _a });
+
+    //正常上传
+    res.send({ code: 1, msg: "upload成功", data: {
+      path: `http://${req.headers.host}/${req.file.destination}/${req.file.filename}`
+    }});
 }
 
 const execlModul = (req, res) => {  
@@ -117,12 +125,45 @@ const execlModul = (req, res) => {
   // res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');  
   // res.setHeader('Content-Disposition', `attachment; filename="${encodedFilename}"`);
   // XLSX.writeFile(workbook,`assets/xlsx/${config.title}.xlsx`)
+
+  //重定向到模板下载链接
   res.redirect(`http://${req.headers.host}/assets/xlsx/${config.title}.xlsx`);
   // res.send(workbook); 
   // res.send(`http://${host}/assets/xlsx/${config.title}.xlsx`)
 }
 
+const importExecl = (req,res) => {
+  if (!req.file) {
+    return res.status(400).send('upload错误');
+  }
+  const workbook = XLSX.readFile(`${req.file.destination}/${req.file.filename}`);  
+
+  // 获取工作表列表  
+  const sheet_name_list = workbook.SheetNames;  
+
+  // 获取第一个工作表的数据  
+  const worksheet = workbook.Sheets[sheet_name_list[0]];  
+
+  // 将工作表数据转换为JSON对象数组  
+  const jsonData = XLSX.utils.sheet_to_json(worksheet);  
+
+  console.log(jsonData);
+  //http://${req.headers.host}/${req.file.destination}/${req.file.filename}
+  res.send({ code: 1, msg: "已加入导入队列"});
+}
+//dome ----start
+// const workbook = XLSX.readFile("assets/xlsx/模板.xlsx");  
+// // console.log(workbook)
+// // 获取工作表列表  
+// const sheet_name_list = workbook.SheetNames;  
+// // 获取第一个工作表的数据  
+// const worksheet = workbook.Sheets[sheet_name_list[0]];
+// // 将工作表数据转换为JSON对象数组  
+// const jsonData = XLSX.utils.sheet_to_json(worksheet);  
+// console.log(jsonData);
+//dome ----end
+
 router.get('/dModul', execlModul)
 router.post('/uploads', upload.single('file'),useUploads)
-
+router.post('/execl_import', upload.single('file'),importExecl)
 module.exports = router
