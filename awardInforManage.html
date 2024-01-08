@@ -19,6 +19,7 @@
       <input type="text" name="encourage" placeholder="获奖名称" />
       <input type="text" name="Instructor" placeholder="指导老师" />
       <input type="text" name="org" placeholder="主办单位、机构、部门" />
+      <input type="text" name="desc" placeholder="描述" />
       <!-- <input type="text" name="approver" placeholder="" /> -->
       <!-- <input type="text" name="submit_user" placeholder="" /> -->
       <input type="submit" value="新增" />
@@ -49,6 +50,7 @@
     <input type="text" name="encourage" placeholder="获奖名称" />
     <input type="text" name="Instructor" placeholder="指导老师" />
     <input type="text" name="org" placeholder="主办单位、机构、部门" />
+    <input type="text" name="desc" placeholder="描述" />
     <!-- <input type="text" name="approver" placeholder="" /> -->
     <!-- <input type="text" name="submit_user" placeholder="" /> -->
     <input type="submit" value="修改" />
@@ -100,7 +102,13 @@
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data.data)
+            // console.log(data)
+            alert(data.msg)
+            let parent = document.getElementById("awary");
+            while (parent.hasChildNodes()) { // 循环检查父节点是否有子节点  
+              parent.removeChild(parent.firstChild); // 删除第一个子节点  
+            }
+            getAwardList()
         })
       }
   </script>  

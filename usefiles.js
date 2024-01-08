@@ -5,6 +5,9 @@ const multer = require('multer'); // 导入Multer库，用于处理文件上传
 var Jimp = require("jimp");
 const XLSX = require('xlsx'); 
 const path = require('path');
+const db = require('./db');
+const moment = require('moment');  
+// const moment = require('moment-timezone');  
 
 const useJimp = async (fp,host,w,h) => {
     const imageFilePath = path.join(__dirname, `/assets/uploads/${fp}`);
@@ -130,27 +133,107 @@ const execlModul = (req, res) => {
   res.redirect(`http://${req.headers.host}/assets/xlsx/${config.title}.xlsx`);
   // res.send(workbook); 
   // res.send(`http://${host}/assets/xlsx/${config.title}.xlsx`)
-}
+} 
 
 const importExecl = (req,res) => {
   if (!req.file) {
     return res.status(400).send('upload错误');
   }
-  const workbook = XLSX.readFile(`${req.file.destination}/${req.file.filename}`);  
-
+  const workbook = XLSX.readFile(`${req.file.destination}/${req.file.filename}`, {cellDates: true,dateNF(d,s){
+    return 'YYYY-MM-DD'
+  }});  
   // 获取工作表列表  
   const sheet_name_list = workbook.SheetNames;  
-
   // 获取第一个工作表的数据  
   const worksheet = workbook.Sheets[sheet_name_list[0]];  
-
   // 将工作表数据转换为JSON对象数组  
   const jsonData = XLSX.utils.sheet_to_json(worksheet);  
-
-  console.log(jsonData);
+  //获取到的数据
+  // console.log(jsonData);
+  if(!Array.isArray(jsonData)){
+    res.send({ code: 0, msg: "数据异常"});
+    return
+  }
+  if(!jsonData.length){
+    res.send({ code: 0, msg: "没有检测到导入数据，请检查文档格式或数据！"});
+    return
+  }
   //http://${req.headers.host}/${req.file.destination}/${req.file.filename}
   res.send({ code: 1, msg: "已加入导入队列"});
+  // console.log("服务器继续执行")
+  let _resout = execlFillter(jsonData)
+  // console.log(_resout)
+  db.query(_resout.sqlStr, _resout.jsonData , (results,fields) => {
+    //结果后续通过其他方式通知前端
+    // console.log(results)
+    if (results.affectedRows > 0) {
+      // res.send({ code: 1, msg: "添加完成" })
+      console.log(`成功添加${results.affectedRows}条数据`)
+    } else {
+      // res.send({ code: 0, msg: "添加失败" })
+      console.log("添加失败")
+    }
+  })
 }
+
+//
+function convertToBeijingTime(utcTime) {
+  const beijingTime = new Date(utcTime.getTime() + 8 * 60 * 60 * 1000); // UTC时间加上8小时  
+  const beijingDate = beijingTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }); // 转换为北京时区的时间 
+  return moment(beijingDate,"YYYY/MM/DD HH:mm:ss").format("YYYY-MM-DD");  
+}
+
+let valConfig = [
+  '学校',
+  '学院',
+  '专业',
+  '年级',
+  '学号',
+  '姓名',
+  '获奖时间',
+  '比赛、活动名称',
+  '获奖名称',
+  '指导老师',
+  '主办单位、机构、部门',
+  '描述'
+]
+
+const execlFillter = (_json) =>{
+  var _newJson = []
+  let _sqlStr = `insert into stu_award(school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org,award_desc) values`
+  for(var i in _json){
+    var _i = Number(i)
+    //拼接sql
+    if(_i+1 === _json.length) _sqlStr += "(?,?,?,?,?,?,?,?,?,?,?,?)"; else _sqlStr += "(?,?,?,?,?,?,?,?,?,?,?,?),";
+    if(typeof _json[_i] === 'object'){
+      var values = []
+      for(var j in valConfig){
+        var _j = Number(j)
+        //根据valConfig字段配置判断需要的字段是否存在
+        if(valConfig[_j]==='获奖时间'){
+          values.push(_json[_i][valConfig[_j]] ? convertToBeijingTime(_json[_i][valConfig[_j]]): '')
+        }else{
+          values.push(_json[_i][valConfig[_j]] ? _json[_i][valConfig[_j]]: '')
+        }
+      }
+      //获取到每个行的信息
+      // console.log(values)
+    }
+    //拼接所有行信息
+    _newJson = [ ..._newJson, ...values ]
+  }
+  // console.log(_newJson)
+  // console.log(_sqlStr)
+  //输出最后sql,json
+  return {
+    sqlStr: _sqlStr,
+    jsonData: _newJson
+  }
+}
+
+execlFillter()
+
+
 //dome ----start
 // const workbook = XLSX.readFile("assets/xlsx/模板.xlsx");  
 // // console.log(workbook)

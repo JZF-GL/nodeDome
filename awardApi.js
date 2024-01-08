@@ -10,9 +10,9 @@ const awardLists = (req, res) => {
 }
 // 新增
 const awardAdd = (req, res) =>{
-    var {school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org} = req.body
-    const sqlStr = "insert into stu_award(school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org) values(?,?,?,?,?,?,?,?,?,?,?)"
-    db.query(sqlStr, [school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org], (results,fields) => {
+    var {school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org,desc} = req.body
+    const sqlStr = "insert into stu_award(school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org,award_desc) values(?,?,?,?,?,?,?,?,?,?,?,?)"
+    db.query(sqlStr, [school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org,desc], (results,fields) => {
         if (results.affectedRows === 1) {
         	res.send({ code: 1, msg: "添加完成" })
         } else {
@@ -22,9 +22,9 @@ const awardAdd = (req, res) =>{
 }
 
 const awardEdit = (req, res) =>{
-    var {school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org,id} = req.body
-    const sqlStr = "UPDATE stu_award set school = ?,college = ?,speciality = ?,grade = ?,student_id = ?,full_name = ?,award_time = ?,activity = ?,encourage = ?,Instructor = ?,org = ? WHERE id=?"
-    db.query(sqlStr, [school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org,id], (results,fields) => {
+    var {school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org,desc,id} = req.body
+    const sqlStr = "UPDATE stu_award set school = ?,college = ?,speciality = ?,grade = ?,student_id = ?,full_name = ?,award_time = ?,activity = ?,encourage = ?,Instructor = ?,org = ?,award_desc = ? WHERE id=?"
+    db.query(sqlStr, [school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org,desc,id], (results,fields) => {
         if (results.affectedRows === 1) {
         	res.send({ code: 1, msg: "修改完成" })
         } else {
