@@ -17,10 +17,10 @@ module.exports = {
                 )
                 connection.end(function(err){
                     if(err){
-                        console.log('关闭数据库，连接失败！')
+                        // console.log('关闭数据库，连接失败！')
                         throw err
                     }else{
-                        console.log('数据库连接已关闭！')  
+                        // console.log('数据库连接已关闭！')  
                     }
                 })
             })

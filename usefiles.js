@@ -28,55 +28,6 @@ const useJimp = async (fp,host,w,h) => {
     return _FP
 }
 
-// const crypto = require('crypto'); // 导入加密模块
-// const path = require('path')
-// const fs = require('fs')
-// 读取图片文件
-// function readImageFile(filePath) {
-//     return new Promise((resolve, reject) => {
-//         fs.readFile(filePath, (err, data) => {
-//             if (err) {
-//                 reject(err);
-//             } else {
-//                 console.log('文件------>',data)
-//                 resolve(data);
-//             }
-//         });
-//     });
-// }
-// // 加密函数
-// function encryptData(data) {
-//     console.log('待加密数据------------->', data)
-//     const algorithm = 'aes-256-cbc';
-//     const key = crypto.randomBytes(16).toString();
-//     // 创建加密器并设置初始向量为空
-//     const cipher = crypto.createCipheriv(algorithm, key, 32);
-//     // let encrypted = cipher.update(data, 'utf8', 'hex'); 
-//     // encrypted += cipher.final('hex'); 
-    
-//     let encryptedImageData = '';
-//     cipher.on('data', (chunk) => {
-//         encryptedImageData += chunk;
-//     });
-//     cipher.end(data);
-//     console.log('加密数据------------->', encryptedImageData)
-//     return encryptedImageData;
-// }
-// // 模拟的图片文件路径
-// const imageFilePath = path.join(__dirname, 'uploads/Vector672555.jpg');
-// console.log('imageFilePath---------->',imageFilePath)
-// readImageFile(imageFilePath)
-//     .then(data => encryptData(data))
-//     .then(encryptedData => {
-//         console.log(encryptedData);  // 输出加密后的数据
-//         // 你可以将此数据发送给前端，或将其存储在数据库或其他地方。
-//     })
-//     .catch(err => console.error(err));
-
-
-
-
-
 // 配置Multer，指定上传文件存储的目录和文件名生成策略
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -168,7 +119,13 @@ const importExecl = (req,res) => {
     // console.log(results)
     if (results.affectedRows > 0) {
       // res.send({ code: 1, msg: "添加完成" })
-      console.log(`成功添加${results.affectedRows}条数据`)
+      console.log(`成功添加${results.affectedRows}条信息`)
+      //继续生成审批流程
+      let examineData = examineFillter(results.insertId,_resout.examineJson)
+      // console.log(examineData)
+      db.query(examineData.examineSql,examineData.jsonData,(_r,_f)=>{
+        console.log(`成功添加${_r.affectedRows}条审批流程`)
+      })
     } else {
       // res.send({ code: 0, msg: "添加失败" })
       console.log("添加失败")
@@ -197,16 +154,25 @@ let valConfig = [
   '主办单位、机构、部门',
   '描述'
 ]
+let examineValConfig = [
+  '学校',
+  '学院',
+  '专业',
+  '姓名',
+]
 
 const execlFillter = (_json) =>{
   var _newJson = []
-  let _sqlStr = `insert into stu_award(school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org,award_desc) values`
+  let _sqlStr = `insert into stu_award(school,college,speciality,grade,student_id,full_name,award_time,activity,encourage,Instructor,org,award_desc,award_status) values`
+  var _examineJson = []
   for(var i in _json){
     var _i = Number(i)
     //拼接sql
-    if(_i+1 === _json.length) _sqlStr += "(?,?,?,?,?,?,?,?,?,?,?,?)"; else _sqlStr += "(?,?,?,?,?,?,?,?,?,?,?,?),";
+    if(_i+1 === _json.length) _sqlStr += "(?,?,?,?,?,?,?,?,?,?,?,?,?)"; else _sqlStr += "(?,?,?,?,?,?,?,?,?,?,?,?,?),";
     if(typeof _json[_i] === 'object'){
       var values = []
+      var _examineValues = []
+      var _strObj = []
       for(var j in valConfig){
         var _j = Number(j)
         //根据valConfig字段配置判断需要的字段是否存在
@@ -215,36 +181,46 @@ const execlFillter = (_json) =>{
         }else{
           values.push(_json[_i][valConfig[_j]] ? _json[_i][valConfig[_j]]: '')
         }
+        //添加到审核信息
+        if(examineValConfig.includes(valConfig[_j])){
+          _strObj.push(_json[_i][valConfig[_j]] ? _json[_i][valConfig[_j]]: '')
+        }
       }
+      values.push('1')
+      _examineValues = ['1',`${_strObj[0] || ''}${_strObj[1] || ''}${_strObj[2] || ''}-${_strObj[3] || ''}-获奖信息审核`,'1']
       //获取到每个行的信息
       // console.log(values)
     }
     //拼接所有行信息
     _newJson = [ ..._newJson, ...values ]
+    _examineJson.push(_examineValues)
   }
   // console.log(_newJson)
   // console.log(_sqlStr)
   //输出最后sql,json
   return {
     sqlStr: _sqlStr,
-    jsonData: _newJson
+    jsonData: _newJson,
+    examineJson: _examineJson
   }
 }
 
-execlFillter()
-
-
-//dome ----start
-// const workbook = XLSX.readFile("assets/xlsx/模板.xlsx");  
-// // console.log(workbook)
-// // 获取工作表列表  
-// const sheet_name_list = workbook.SheetNames;  
-// // 获取第一个工作表的数据  
-// const worksheet = workbook.Sheets[sheet_name_list[0]];
-// // 将工作表数据转换为JSON对象数组  
-// const jsonData = XLSX.utils.sheet_to_json(worksheet);  
-// console.log(jsonData);
-//dome ----end
+//过滤获取批量生成审批流程fun
+const examineFillter = (_id,_data) =>{
+  var _newJson = []
+  let _examineSql = "insert into stu_examine(examine_type_id,examine_type,examine_title,examine_status) values"
+  for(var i in _data){
+    var _i = Number(i)
+    if(_i+1 === _data.length) _examineSql += "(?,?,?,?)"; else _examineSql += "(?,?,?,?),";
+    //处理拼接新增信息的id
+    var values = [_id + _i,..._data[_i]]
+    _newJson = [..._newJson,...values]
+  }
+  return {
+    examineSql: _examineSql,
+    jsonData: _newJson
+  }
+}
 
 router.get('/dModul', execlModul)
 router.post('/uploads', upload.single('file'),useUploads)

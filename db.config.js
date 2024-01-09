@@ -4,6 +4,5 @@ module.exports = {
         user: 'root',
         password: 'root2023',
         database: 'nodesql',
-        prot: '3306'
     }
 }

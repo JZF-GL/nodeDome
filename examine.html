@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>  
+<html>  
+<head>  
+  <title>examine接口测试</title>
+</head>  
+<body>
+  <h1>查询</h1>  
+  <input type="button" value="查询" onclick="getExamineList()" />
+  <div class="examineLists" id="examine">
+
+  </div>
+  <script>
+    const getExamineList = () =>{
+      const url = 'http://localhost:8879/api/examine/query';
+      fetch(url, {  
+          method: 'get', // 或者 'POST'  
+          headers: {  
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'  
+          },
+      })
+      .then(response => response.json())
+      .then(data => {
+          // console.log(data.data)
+          let _b = document.getElementById("examine");
+          let _c = document.createElement('ul')
+          if(data.data.length){
+              for(var i in data.data){
+                  let _d = document.createElement('li')
+                  _d.innerHTML = `
+                      ${data.data[i].examine_title}<br />
+                      ${data.data[i].examine_type}<br />
+                      ${data.data[i].approver}<br />
+                      ${data.data[i].examine_time}<br />
+                      ${data.data[i].creator}<br />
+                      ${data.data[i].create_time}<br />
+                      ${data.data[i].examine_status}<br />
+                      ${data.data[i].examine_desc}<br />
+                      <input type="button" value="通过" onclick="editExamine('2',${data.data[i].id})" />
+                      <input type="button" value="取消" onclick="editExamine('3',${data.data[i].id})" />
+                      <input type="button" value="删除" onclick="delExamine(${data.data[i].id})" />
+                  `
+                  _c.appendChild(_d)
+              }
+          }
+          _b.appendChild(_c)
+      })
+    }
+    const editExamine = (_type,_id) =>{
+      const url = `http://localhost:8879/api/examine/edit`;
+      // let _formData = new FormData()
+      // _formData.append('id',_id)
+      // _formData.append('edit_type',_type)
+      let _formData = {
+        id: _id,
+        edit_type: _type
+      }
+      fetch(url, {  
+          method: 'POST',
+          headers: {  
+            'Content-Type': 'application/json' // 设置正确的Content-Type头部  
+          },  
+          body: JSON.stringify(_formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+          // console.log(data)
+          alert(data.msg)
+          if(data.code){
+            let parent = document.getElementById("examine");
+            while (parent.hasChildNodes()) { // 循环检查父节点是否有子节点  
+              parent.removeChild(parent.firstChild); // 删除第一个子节点  
+            }
+            getExamineList()
+          }
+      })
+    }
+    const delExamine = (_id) =>{
+      const url = `http://localhost:8879/api/examine/del?id=${_id}`;
+      fetch(url, {  
+          method: 'delete',
+          headers: {  
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'  
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          // console.log(data)
+          alert(data.msg)
+          if(data.code){
+            let parent = document.getElementById("examine");
+            while (parent.hasChildNodes()) { // 循环检查父节点是否有子节点  
+              parent.removeChild(parent.firstChild); // 删除第一个子节点  
+            }
+            getExamineList()
+          }
+      })
+    }
+</script>  
+</body>  
+</html>

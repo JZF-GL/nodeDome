@@ -7,6 +7,7 @@ const port = 8879
 const userApi = require('./stu_user_api')
 const useFiles = require('./usefiles')
 const awardApi = require('./awardApi')
+const examineApi = require('./examineApi')
 
 app.use((err, req, res, next) => {  
   // 自定义错误页面或响应  
@@ -20,7 +21,7 @@ app.use((err, req, res, next) => {
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
+// app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json({ type: "application/*+json" }))
 app.all("*",function(req,res,next){
   res.setHeader('Access-Control-Allow-Origin', '*');  
@@ -40,9 +41,9 @@ app.use('/api/user',userApi)
 
 app.use('/api/files',useFiles)
 app.use('/api/award',awardApi)
+app.use('/api/examine',examineApi)
 app.use('/assets',express.static('assets'));  
 // app.use("/assets", express.static(__dirname));
-
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
